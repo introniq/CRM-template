@@ -1,0 +1,50 @@
+.crm-navbar {
+    position: absolute;
+    top: 2vh;
+    left: 0;
+    width: 75%;
+    padding: 16px 40px;
+    margin-left: 350px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    transition: all 0.4s ease;
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: 500;
+    font-size: 1.1rem;
+    z-index: 10;
+}
+
+.crm-navbar.scrolled {
+    position: fixed;
+    top: 0;
+    margin-top: 0;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    transform: translateY(0);
+    border-radius: 0;
+}
+
+.navbar-left {
+    color: #1e293b;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.navbar-right {
+    display: flex;
+    gap: 20px;
+}
+
+.navbar-icon {
+    font-size: 1.1rem;
+    color: #334155;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.navbar-icon:hover {
+    color: #0ea5e9;
+}
