@@ -1,0 +1,115 @@
+.tasks-container {
+  display: flex;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.tasks-main {
+  flex: 1;
+  background: #f1f3f6;
+  padding: 30px;
+  min-height: 100vh;
+}
+
+.tasks-title {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.tasks-filters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.filter-dropdown {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  font-size: 14px;
+}
+
+.calendar-sync-btn {
+  background: #0d6efd;
+  color: white;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.task-card {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease;
+}
+
+.task-card:hover {
+  transform: translateY(-4px);
+}
+
+.task-card h4 {
+  margin-bottom: 10px;
+  color: #007bff;
+}
+
+.task-card p {
+  font-size: 0.9rem;
+  margin: 5px 0;
+  color: #444;
+}
+
+.reminder-labels {
+  margin-top: 10px;
+}
+
+.reminder {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 10px;
+  margin-right: 6px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.reminder.email {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.reminder.push {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.reminder.whatsapp {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Category styles */
+.category-call {
+  border-left: 4px solid #0dcaf0;
+}
+
+.category-meeting {
+  border-left: 4px solid #198754;
+}
+
+.category-proposal {
+  border-left: 4px solid #6610f2;
+}
+
+.category-follow-up {
+  border-left: 4px solid #fd7e14;
+}

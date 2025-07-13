@@ -1,0 +1,155 @@
+.communication-container {
+  display: flex;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.communication-main {
+  flex: 1;
+  background: #f8f9fa;
+  padding: 30px;
+  min-height: 100vh;
+}
+
+.page-title {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #343a40;
+}
+
+/* Integration section */
+.integration-section {
+  margin-bottom: 30px;
+}
+
+.integration-cards {
+  display: flex;
+  gap: 20px;
+}
+
+.account-card {
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.connected {
+  border-left: 6px solid #198754;
+  color: #198754;
+}
+
+.disconnected {
+  border-left: 6px solid #dc3545;
+  color: #dc3545;
+}
+
+/* Compose */
+.compose-section {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+}
+
+.compose-section textarea {
+  width: 100%;
+  padding: 10px;
+  font-size: 0.95rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  resize: none;
+}
+
+.template-vars {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.template-vars code {
+  background: #f1f1f1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 5px;
+}
+
+.channels {
+  margin-top: 12px;
+  display: flex;
+  gap: 15px;
+  font-size: 0.9rem;
+}
+
+.send-btn,
+.schedule-btn {
+  margin-top: 15px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.send-btn {
+  background: #0d6efd;
+  color: white;
+  margin-right: 10px;
+}
+
+.schedule-btn {
+  background: #6c757d;
+  color: white;
+}
+
+/* History */
+.history-section {
+  margin-top: 40px;
+}
+
+.email-history {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.email-entry {
+  background: white;
+  padding: 14px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.status {
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 10px;
+  margin-right: 10px;
+  display: inline-block;
+}
+
+.status.sent {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.status.opened {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status.clicked {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.time {
+  font-size: 0.75rem;
+  color: #6c757d;
+}

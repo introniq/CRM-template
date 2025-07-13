@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
-import './Clients.css';
+import '../styles/Clients.css';
 import { FaPlus, FaEdit, FaTrash, FaFileUpload, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Modal, Button, Form, Collapse } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';

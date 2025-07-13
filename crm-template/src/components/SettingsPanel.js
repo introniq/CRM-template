@@ -1,4 +1,4 @@
-import './SidePanel.css';
+import '../styles/SidePanel.css';
 import { FaTimes, FaWrench, FaUsersCog, FaEnvelopeOpenText, FaCogs, FaCode } from 'react-icons/fa';
 
 const SettingsPanel = ({ onClose }) => {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Sidebar from '../components/Sidebar';
-import './Reports.css';
+import '../styles/Reports.css';
 import { FaFileCsv, FaFilePdf } from 'react-icons/fa';
 
 const Reports = () => {

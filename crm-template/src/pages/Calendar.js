@@ -8,7 +8,7 @@ import { FaPlus, FaSync, FaTrash, FaExternalLinkAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import './Calendar.css';
+import '../styles/Calendar.css';
 
 const locales = { 'en-US': require('date-fns/locale/en-US') };
 const localizer = dateFnsLocalizer({

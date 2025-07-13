@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Sidebar from '../components/Sidebar';
-import './Leads.css';
+import '../styles/Leads.css';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import { Modal, Button, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';

@@ -1,4 +1,4 @@
-import './SidePanel.css';
+import '../styles/SidePanel.css';
 import { FaTimes, FaBell, FaTasks, FaClipboardList, FaUserShield } from 'react-icons/fa';
 
 const NotificationsPanel = ({ onClose }) => {

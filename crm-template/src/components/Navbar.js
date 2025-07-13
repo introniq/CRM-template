@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import './Navbar.css';
+import '../styles/Navbar.css';
 import { FaBell, FaCog } from 'react-icons/fa';
 import NotificationsPanel from './NotificationsPanel';
 import SettingsPanel from './SettingsPanel';
