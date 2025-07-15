@@ -1,0 +1,210 @@
+/* Animated gradient background with floating bubbles */
+
+.auth-container {
+  position: relative;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fefeff, #e3f6ff);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.6s ease-in;
+}
+
+/* Auth card */
+.auth-box {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(25px);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.4s ease;
+  animation: slideUp 0.8s ease;
+  z-index: 10;
+}
+
+.auth-box h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: 600;
+  color: #222;
+}
+
+.auth-box input {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 15px;
+  outline: none;
+  font-size: 1rem;
+  transition: border 0.3s;
+}
+
+.auth-box input:focus {
+  border: 1px solid #00c9ff;
+}
+
+.auth-box button {
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-weight: bold;
+  background-color: #00c9ff;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.auth-box button:hover {
+  background-color: #00a1d6;
+}
+
+.divider {
+  text-align: center;
+  margin: 10px 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.google-btn:hover {
+  background-color: #f2f2f2;
+}
+
+.google-icon {
+  height: 20px;
+  width: 20px;
+}
+
+.auth-box p {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  text-align: center;
+  cursor: pointer;
+  color: #007bff;
+  transition: 0.3s;
+}
+
+.auth-box p:hover {
+  text-decoration: underline;
+}
+
+/* Floating animated bubbles */
+.bubble {
+  position: absolute;
+  bottom: -150px;
+  background-color: rgba(0, 200, 255, 0.2);
+  border-radius: 50%;
+  animation: rise 20s infinite ease-in;
+}
+
+.bubble:nth-child(1) {
+  width: 120px;
+  height: 120px;
+  left: 10%;
+  animation-delay: 0s;
+}
+.bubble:nth-child(2) {
+  width: 60px;
+  height: 60px;
+  left: 20%;
+  animation-delay: 2s;
+}
+.bubble:nth-child(3) {
+  width: 90px;
+  height: 90px;
+  left: 35%;
+  animation-delay: 4s;
+}
+.bubble:nth-child(4) {
+  width: 70px;
+  height: 70px;
+  left: 50%;
+  animation-delay: 6s;
+}
+.bubble:nth-child(5) {
+  width: 100px;
+  height: 100px;
+  left: 70%;
+  animation-delay: 8s;
+}
+.bubble:nth-child(6) {
+  width: 50px;
+  height: 50px;
+  left: 85%;
+  animation-delay: 10s;
+}
+
+.strength {
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.strength.weak {
+  color: red;
+}
+
+.strength.medium {
+  color: orange;
+}
+
+.strength.strong {
+  color: green;
+}
+
+
+@keyframes rise {
+  0% {
+    bottom: -150px;
+    transform: translateX(0) scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(30px) scale(1.1);
+  }
+  100% {
+    bottom: 100%;
+    transform: translateX(-30px) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

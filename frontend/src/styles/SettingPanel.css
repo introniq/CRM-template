@@ -1,0 +1,341 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+:root {
+    --panel-bg: rgba(255, 255, 255, 0.6);
+    --panel-border: rgba(255, 255, 255, 0.3);
+    --text-color: #1f2937;
+    --text-secondary: #6b7280;
+    --icon-color: #4b5563;
+    --hover-bg: rgba(255, 255, 255, 0.75);
+    --hover-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    --blur: blur(20px);
+    --accent: #0ea5e9;
+    --danger: #dc2626;
+    --modal-bg: rgba(255, 255, 255, 0.7);
+    --error-color: #dc2626;
+    --success-color: #10b981;
+    --transition: all 0.3s ease;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f4f6f8;
+}
+
+/* Panel Container */
+.glass-panel {
+    width: 380px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    right: 0;
+    background: var(--panel-bg);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border-left: 1px solid var(--panel-border);
+    box-shadow: -10px 0 32px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    z-index: 9999;
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px;
+    animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Header */
+.glass-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.glass-heading-icon {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.glass-heading-icon h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.settings-icon {
+    font-size: 1.4rem;
+    color: var(--accent);
+}
+
+.glass-close {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.glass-close:hover {
+    transform: scale(1.1);
+    background: var(--hover-bg);
+    color: var(--accent);
+}
+
+/* Scrollable Content */
+.glass-scrollable-body {
+    overflow-y: auto;
+    padding-right: 4px;
+    flex-grow: 1;
+    scroll-behavior: smooth;
+}
+
+.glass-scrollable-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.glass-scrollable-body::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+/* Items */
+.glass-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.glass-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.3);
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.glass-item:hover {
+    background: var(--hover-bg);
+    transform: translateY(-2px);
+    box-shadow: var(--hover-shadow);
+}
+
+.glass-item span {
+    color: var(--text-color);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.glass-icon {
+    font-size: 1.2rem;
+    color: var(--icon-color);
+    flex-shrink: 0;
+}
+
+.glass-divider {
+    height: 1px;
+    background-color: rgba(0, 0, 0, 0.08);
+    margin: 10px 0 16px;
+}
+
+/* Special Cases */
+.glass-item.danger span,
+.glass-item.danger .glass-icon {
+    color: var(--danger);
+}
+
+.glass-item.danger:hover {
+    background: rgba(255, 0, 0, 0.05);
+}
+
+.glass-item.logout span,
+.glass-item.logout .glass-icon {
+    color: var(--text-color);
+}
+
+/* Modal */
+.glass-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.glass-modal {
+    background: var(--modal-bg);
+    backdrop-filter: var(--blur);
+    border-radius: 12px;
+    padding: 20px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+    animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.modal-header h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-body label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.modal-body input {
+    padding: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    background: rgba(255, 255, 255, 0.4);
+    transition: var(--transition);
+}
+
+.modal-body input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    justify-content: flex-end;
+}
+
+.modal-save,
+.modal-cancel,
+.modal-delete {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.modal-save {
+    background: var(--accent);
+    color: white;
+}
+
+.modal-save:hover {
+    background: #0ea5e9;
+    transform: translateY(-1px);
+}
+
+.modal-save:disabled {
+    background: #a5b4fc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.modal-cancel {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-color);
+}
+
+.modal-cancel:hover {
+    background: rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.modal-delete {
+    background: var(--danger);
+    color: white;
+}
+
+.modal-delete:hover {
+    background: #b91c1c;
+    transform: translateY(-1px);
+}
+
+.delete-confirmation p {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    line-height: 1.4;
+    margin-bottom: 16px;
+}
+
+.error-list {
+    margin: 8px 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.85rem;
+    color: var(--error-color);
+}
+
+.error-list li {
+    margin-bottom: 4px;
+}
