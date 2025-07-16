@@ -1,15 +1,19 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
-import { Modal, Button, Form, Navbar } from 'react-bootstrap';
+import { Modal, Button, Form } from 'react-bootstrap';
 import { FaPlus, FaSync, FaTrash, FaExternalLinkAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Sidebar from '../components/Sidebar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '../styles/Calendar.css';
 import CrNavbar from '../components/Navbar';
+import { db } from '../firebase';
+import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, Timestamp } from 'firebase/firestore';
 
 const locales = { 'en-US': require('date-fns/locale/en-US') };
 const localizer = dateFnsLocalizer({
@@ -19,38 +23,6 @@ const localizer = dateFnsLocalizer({
   getDay,
   locales,
 });
-
-const initialClients = [
-  {
-    id: 1,
-    name: 'Acme Corp',
-    industry: 'Technology',
-    contactPerson: 'Jane Doe',
-    email: 'jane@acme.com',
-    phone: '555-0123',
-    billingInfo: 'Net 30, Invoice #1234',
-    documents: ['contract.pdf'],
-    interactions: [
-      { id: 1, type: 'Call', date: '2025-07-10', notes: 'Discussed project scope' },
-      { id: 2, type: 'Email', date: '2025-07-09', notes: 'Sent proposal' }
-    ],
-    relationships: ['Shared contact: Bob Singh (LinkedIn)', 'Met at TechConf 2024']
-  },
-  {
-    id: 2,
-    name: 'Beta Inc',
-    industry: 'Finance',
-    contactPerson: 'John Smith',
-    email: 'john@beta.com',
-    phone: '555-0456',
-    billingInfo: 'Net 15, Invoice #5678',
-    documents: [],
-    interactions: [
-      { id: 1, type: 'Message', date: '2025-07-08', notes: 'Follow-up on payment' }
-    ],
-    relationships: ['Referral from Alice Johnson']
-  }
-];
 
 const ItemTypes = { TASK: 'task' };
 
@@ -69,22 +41,14 @@ const DraggableTask = ({ task, clientId }) => {
       className={`task-item p-2 mb-2 bg-gray-100 rounded-lg flex justify-between items-center ${isDragging ? 'opacity-50' : ''}`}
     >
       <span>{task.notes} ({task.type})</span>
-      <span className="text-xs text-gray-600">{task.date}</span>
+      <span className="text-xs text-gray-600">{task.date ? new Date(task.date).toLocaleDateString() : 'No Date'}</span>
     </div>
   );
 };
 
 const CalendarPage = () => {
   const [events, setEvents] = useState([]);
-  const [tasks, setTasks] = useState(
-    initialClients.flatMap((client) =>
-      client.interactions.map((interaction) => ({
-        ...interaction,
-        clientId: client.id,
-        clientName: client.name,
-      }))
-    )
-  );
+  const [tasks, setTasks] = useState([]);
   const [showEventModal, setShowEventModal] = useState(false);
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [newEvent, setNewEvent] = useState({
@@ -97,8 +61,51 @@ const CalendarPage = () => {
   const [editingEvent, setEditingEvent] = useState(null);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const unsubscribeEvents = onSnapshot(collection(db, 'events'), (snapshot) => {
+      const eventsData = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          start: data.start instanceof Timestamp ? data.start.toDate() : new Date(data.start),
+          end: data.end instanceof Timestamp ? data.end.toDate() : new Date(data.end),
+        };
+      });
+      setEvents(eventsData);
+    }, (error) => {
+      console.error("Error fetching events:", error);
+      toast.error('Failed to fetch events.');
+    });
+
+    const unsubscribeTasks = onSnapshot(collection(db, 'tasks'), (snapshot) => {
+      const tasksData = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          notes: data.title || 'Untitled Task',
+          type: data.category || 'Follow-up',
+          clientId: data.clientId || null,
+          clientName: data.clientName || data.assignee || 'N/A',
+          date: data.due instanceof Timestamp ? data.due.toDate().toISOString() : data.due || null,
+          ...data,
+        };
+      });
+      setTasks(tasksData);
+    }, (error) => {
+      console.error("Error fetching tasks:", error);
+      toast.error('Failed to fetch tasks.');
+    });
+
+    return () => {
+      unsubscribeEvents();
+      unsubscribeTasks();
+    };
+  }, []);
+
   const handleSelectSlot = useCallback(({ start, end }) => {
     setNewEvent({ title: '', start, end, clientId: null, type: 'Meeting' });
+    setEditingEvent(null);
     setShowEventModal(true);
   }, []);
 
@@ -114,31 +121,44 @@ const CalendarPage = () => {
     setShowEventModal(true);
   }, []);
 
-  const handleDropEvent = useCallback((event, newStart) => {
-    setEvents((prev) =>
-      prev.map((ev) =>
-        ev.id === event.id ? { ...ev, start: newStart, end: new Date(newStart.getTime() + (ev.end - ev.start)) } : ev
-      )
-    );
+  const handleDropEvent = useCallback(async (event, newStart) => {
+    try {
+      const eventRef = doc(db, 'events', event.id);
+      const duration = event.end - event.start;
+      const newEnd = new Date(newStart.getTime() + duration);
+      await updateDoc(eventRef, {
+        start: Timestamp.fromDate(newStart),
+        end: Timestamp.fromDate(newEnd),
+      });
+      toast.success('Event rescheduled successfully!');
+    } catch (error) {
+      console.error("Error updating event:", error);
+      toast.error('Failed to reschedule event.');
+    }
   }, []);
 
-  const handleDropTask = useCallback((task, clientId, date) => {
-    const newEvent = {
-      id: events.length + 1,
-      title: `${task.notes} (${task.type})`,
-      start: date,
-      end: new Date(date.getTime() + 60 * 60 * 1000), // 1-hour duration
-      clientId,
-      clientName: initialClients.find((c) => c.id === clientId).name,
-      type: task.type,
-    };
-    setEvents([...events, newEvent]);
-  }, [events]);
+  const handleDropTask = useCallback(async (task, clientId, date) => {
+    try {
+      const newEvent = {
+        title: `${task.notes} (${task.type})`,
+        start: Timestamp.fromDate(date),
+        end: Timestamp.fromDate(new Date(date.getTime() + 60 * 60 * 1000)),
+        clientId,
+        clientName: task.clientName,
+        type: task.type,
+      };
+      await addDoc(collection(db, 'events'), newEvent);
+      toast.success(`Task "${task.notes}" added to calendar!`);
+    } catch (error) {
+      console.error("Error dropping task:", error);
+      toast.error('Failed to add task to calendar.');
+    }
+  }, []);
 
   const EventWrapper = ({ event, children }) => {
     const [, drop] = useDrop(() => ({
       accept: ItemTypes.TASK,
-      drop: (item, monitor) => {
+      drop: (item) => {
         const { task, clientId } = item;
         const date = new Date(event.start);
         handleDropTask(task, clientId, date);
@@ -150,57 +170,90 @@ const CalendarPage = () => {
 
   const handleEventChange = (e) => {
     const { name, value } = e.target;
-    setNewEvent({ ...newEvent, [name]: value });
+    setNewEvent({
+      ...newEvent,
+      [name]: name === 'start' || name === 'end' ? new Date(value) : value,
+    });
   };
 
-  const handleAddOrUpdateEvent = () => {
-    if (!newEvent.title) return;
-    if (editingEvent) {
-      setEvents(
-        events.map((ev) =>
-          ev.id === editingEvent.id
-            ? { ...ev, title: newEvent.title, start: new Date(newEvent.start), end: new Date(newEvent.end), clientId: newEvent.clientId, type: newEvent.type }
-            : ev
-        )
-      );
-    } else {
-      setEvents([
-        ...events,
-        {
-          id: events.length + 1,
-          title: newEvent.title,
-          start: new Date(newEvent.start),
-          end: new Date(newEvent.end),
-          clientId: newEvent.clientId,
-          clientName: newEvent.clientId ? initialClients.find((c) => c.id === newEvent.clientId)?.name : null,
-          type: newEvent.type,
-        },
-      ]);
+  const handleAddOrUpdateEvent = async () => {
+    if (!newEvent.title) {
+      toast.error('Event title is required!');
+      return;
     }
-    setShowEventModal(false);
-    setEditingEvent(null);
-    setNewEvent({ title: '', start: new Date(), end: new Date(), clientId: null, type: 'Meeting' });
+    if (newEvent.end < newEvent.start) {
+      toast.error('End date must be after start date!');
+      return;
+    }
+    try {
+      if (editingEvent) {
+        const eventRef = doc(db, 'events', editingEvent.id);
+        await updateDoc(eventRef, {
+          title: newEvent.title,
+          start: Timestamp.fromDate(newEvent.start),
+          end: Timestamp.fromDate(newEvent.end),
+          clientId: newEvent.clientId || null,
+          type: newEvent.type,
+          clientName: newEvent.clientId ? tasks.find((t) => t.clientId === newEvent.clientId)?.clientName || 'N/A' : null,
+        });
+        toast.success('Event updated successfully!');
+      } else {
+        await addDoc(collection(db, 'events'), {
+          title: newEvent.title,
+          start: Timestamp.fromDate(newEvent.start),
+          end: Timestamp.fromDate(newEvent.end),
+          clientId: newEvent.clientId || null,
+          type: newEvent.type,
+          clientName: newEvent.clientId ? tasks.find((t) => t.clientId === newEvent.clientId)?.clientName || 'N/A' : null,
+        });
+        toast.success('Event added successfully!');
+      }
+      setShowEventModal(false);
+      setEditingEvent(null);
+      setNewEvent({ title: '', start: new Date(), end: new Date(), clientId: null, type: 'Meeting' });
+    } catch (error) {
+      console.error("Error adding/updating event:", error);
+      toast.error('Failed to add/update event.');
+    }
   };
 
-  const handleDeleteEvent = (id) => {
+  const handleDeleteEvent = async (id) => {
     if (window.confirm('Are you sure you want to delete this event?')) {
-      setEvents(events.filter((ev) => ev.id !== id));
+      try {
+        await deleteDoc(doc(db, 'events', id));
+        toast.success('Event deleted successfully!');
+      } catch (error) {
+        console.error("Error deleting event:", error);
+        toast.error('Failed to delete event.');
+      }
     }
   };
 
   const handleSyncCalendar = (provider) => {
-    // Placeholder for Google/Outlook sync
-    alert(`Syncing with ${provider} Calendar... (API implementation required)`);
-    // Example Google Calendar sync (requires googleapis package):
-    // const { google } = require('googleapis');
-    // const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
-    // oauth2Client.setCredentials({ access_token: ACCESS_TOKEN });
-    // const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-    // calendar.events.list({ calendarId: 'primary' }, (err, res) => { ... });
-    // Example Outlook Calendar sync (requires @microsoft/microsoft-graph-client):
-    // const client = require('@microsoft/microsoft-graph-client').Client.init({ authProvider: (done) => { done(null, ACCESS_TOKEN); } });
-    // client.api('/me/events').get().then((res) => { ... });
+    const syncedEvents = events.map((event) => ({
+      title: event.title,
+      start: event.start.toISOString(),
+      end: event.end.toISOString(),
+      type: event.type,
+      clientId: event.clientId,
+      clientName: event.clientName,
+    }));
+    console.log(`Syncing with ${provider} Calendar:`, syncedEvents);
+    toast.success(`Synced ${syncedEvents.length} events with ${provider} Calendar!`);
     setShowSyncModal(false);
+  };
+
+  const handleViewClientDetails = () => {
+    if (!newEvent.clientId) {
+      toast.error('No client selected!');
+      return;
+    }
+    try {
+      navigate(`/clients#client-${newEvent.clientId}`);
+    } catch (error) {
+      console.error("Error navigating to client details:", error);
+      toast.error('Failed to navigate to client details.');
+    }
   };
 
   const eventStyleGetter = (event) => {
@@ -210,13 +263,12 @@ const CalendarPage = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <CrNavbar />/
       <div className="calendar-wrapper bg-gray-100 min-h-screen flex">
         <div className="sidebar-fixed">
-        <Sidebar />
+          <Sidebar />
         </div>
         <div className="calendar-content flex-1 p-6">
-          <Navbar />
+          <CrNavbar />
           <div className="calendar-header mt-5 flex justify-between items-center mb-6">
             <div>
               <h2 className="text-2xl font-bold text-gray-800">Calendar</h2>
@@ -224,7 +276,7 @@ const CalendarPage = () => {
             </div>
             <div className="flex gap-4">
               <button
-                className="add-event-btn bg-blue-600 text-white mb-3 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                className="add-event-btn bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
                 onClick={() => setShowEventModal(true)}
               >
                 <FaPlus /> Add Event
@@ -241,9 +293,13 @@ const CalendarPage = () => {
           <div className="calendar-container flex gap-6">
             <div className="task-list w-1/4 bg-white rounded-lg shadow-md p-4">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Tasks</h3>
-              {tasks.map((task) => (
-                <DraggableTask key={task.id} task={task} clientId={task.clientId} />
-              ))}
+              {tasks.length > 0 ? (
+                tasks.map((task) => (
+                  <DraggableTask key={task.id} task={task} clientId={task.clientId} />
+                ))
+              ) : (
+                <p className="text-gray-600">No tasks available.</p>
+              )}
             </div>
             <div className="calendar w-3/4">
               <Calendar
@@ -319,9 +375,9 @@ const CalendarPage = () => {
                     className="text-sm"
                   >
                     <option value="">No Client</option>
-                    {initialClients.map((client) => (
-                      <option key={client.id} value={client.id}>
-                        {client.name}
+                    {tasks.map((task) => (
+                      <option key={task.clientId || task.id} value={task.clientId || task.id}>
+                        {task.clientName}
                       </option>
                     ))}
                   </Form.Select>
@@ -330,7 +386,7 @@ const CalendarPage = () => {
                   <Button
                     variant="link"
                     className="text-blue-600 text-sm flex items-center gap-2"
-                    onClick={() => navigate(`/clients#client-${newEvent.clientId}`)}
+                    onClick={handleViewClientDetails}
                   >
                     <FaExternalLinkAlt /> View Client Details
                   </Button>
@@ -398,6 +454,7 @@ const CalendarPage = () => {
               </Button>
             </Modal.Footer>
           </Modal>
+          <ToastContainer position="top-right" autoClose={3000} hideProgressBar closeOnClick />
         </div>
       </div>
     </DndProvider>

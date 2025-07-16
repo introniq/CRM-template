@@ -1,136 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 .communication-container {
   display: flex;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  background-color: #f5f7fa;
+  min-height: 100vh;
 }
 
 .communication-main {
   flex: 1;
-  background: #f8f9fa;
-  padding: 30px;
-  min-height: 100vh;
+  padding: 2rem;
+  background-color: #f5f7fa;
+  margin-left: 300px; /* Adjusted from 240px to shift closer to sidebar */
 }
 
 .page-title {
-  font-size: 2rem;
-  margin-bottom: 20px;
-  color: #343a40;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a3c6e;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
 }
 
-/* Integration section */
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0d6efd;
+  margin-bottom: 1.5rem;
+}
+
 .integration-section {
-  margin-bottom: 30px;
+  margin-bottom: 2rem;
 }
 
 .integration-cards {
   display: flex;
-  gap: 20px;
+  gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .account-card {
-  padding: 14px 20px;
+  padding: 0.75rem 1.5rem;
   border-radius: 8px;
-  font-weight: bold;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid;
 }
 
 .connected {
-  border-left: 6px solid #198754;
-  color: #198754;
+  border-color: #16a34a;
+  color: #16a34a;
 }
 
 .disconnected {
-  border-left: 6px solid #dc3545;
+  border-color: #dc3545;
   color: #dc3545;
 }
 
-/* Compose */
 .compose-section {
   background: #ffffff;
-  padding: 20px;
+  padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-  margin-bottom: 30px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.form-control, .form-control textarea {
+  border-radius: 8px;
+  font-size: 0.9rem;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-control textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .compose-section textarea {
-  width: 100%;
-  padding: 10px;
-  font-size: 0.95rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
   resize: none;
 }
 
 .template-vars {
-  margin-top: 10px;
+  margin-top: 1rem;
   font-size: 0.85rem;
-  color: #555;
+  color: #6b7280;
 }
 
 .template-vars code {
-  background: #f1f1f1;
-  padding: 2px 6px;
+  background: #f1f3f5;
+  padding: 0.2rem 0.4rem;
   border-radius: 4px;
-  margin-right: 5px;
+  margin-right: 0.5rem;
 }
 
 .channels {
-  margin-top: 12px;
+  margin-top: 1rem;
   display: flex;
-  gap: 15px;
-  font-size: 0.9rem;
+  flex-direction: row;
+  gap: 1.5rem;
+  align-items: center;
 }
 
-.send-btn,
-.schedule-btn {
-  margin-top: 15px;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
+.channel-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #374151;
   cursor: pointer;
 }
 
-.send-btn {
-  background: #0d6efd;
-  color: white;
-  margin-right: 10px;
+.channel-label input[type="checkbox"] {
+  appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  background-color: #ffffff;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.channel-label input[type="checkbox"]:checked {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.channel-label input[type="checkbox"]:checked::after {
+  content: '\2713';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.channel-label input[type="checkbox"]:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.compose-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.send-btn, .schedule-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 .schedule-btn {
-  background: #6c757d;
-  color: white;
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
 }
 
-/* History */
+.send-btn:hover, .schedule-btn:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
 .history-section {
-  margin-top: 40px;
+  margin-top: 2rem;
 }
 
 .email-history {
-  margin-top: 10px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 1.5rem;
 }
 
 .email-entry {
-  background: white;
-  padding: 14px;
+  background: #ffffff;
+  padding: 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  font-size: 0.9rem;
+  color: #374151;
 }
 
 .status {
-  padding: 3px 8px;
+  padding: 0.25rem 0.75rem;
   font-size: 0.75rem;
-  font-weight: bold;
+  font-weight: 600;
   border-radius: 10px;
-  margin-right: 10px;
+  margin-right: 0.75rem;
   display: inline-block;
 }
 
@@ -139,17 +220,116 @@
   color: #0c5460;
 }
 
-.status.opened {
+.status.scheduled {
   background: #d4edda;
   color: #155724;
 }
 
-.status.clicked {
+.status.opened {
   background: #fff3cd;
   color: #856404;
 }
 
+.status.clicked {
+  background: #f8d7da;
+  color: #721c24;
+}
+
 .time {
-  font-size: 0.75rem;
-  color: #6c757d;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.no-history {
+  font-size: 0.9rem;
+  color: #6b7280;
+  text-align: left;
+}
+
+.modal-content {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  padding: 2rem 2rem 0;
+  border-bottom: none;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a3c6e;
+}
+
+.modal-body {
+  padding: 2rem;
+}
+
+.modal-footer {
+  padding: 0 2rem 2rem;
+  border-top: none;
+}
+
+.modal-btn-cancel {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.modal-btn-cancel:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.modal-btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+  border: none;
+}
+
+.modal-btn-primary:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 1024px) {
+  .communication-main {
+    padding: 1.5rem;
+    margin-left: 0;
+  }
+
+  .integration-cards {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .compose-section {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .compose-actions {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .channels {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .email-entry {
+    padding: 1rem;
+  }
 }

@@ -1,45 +1,15 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import '../styles/Clients.css';
 import { FaPlus, FaEdit, FaTrash, FaFileUpload, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Modal, Button, Form, Collapse } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import CrNavbar from '../components/Navbar';
-
-const initialClients = [
-  {
-    id: 1,
-    name: 'Acme Corp',
-    industry: 'Technology',
-    contactPerson: 'Jane Doe',
-    email: 'jane@acme.com',
-    phone: '555-0123',
-    billingInfo: 'Net 30, Invoice #1234',
-    documents: ['contract.pdf'],
-    interactions: [
-      { id: 1, type: 'Call', date: '2025-07-10', notes: 'Discussed project scope' },
-      { id: 2, type: 'Email', date: '2025-07-09', notes: 'Sent proposal' }
-    ],
-    relationships: ['Shared contact: Bob Singh (LinkedIn)', 'Met at TechConf 2024']
-  },
-  {
-    id: 2,
-    name: 'Beta Inc',
-    industry: 'Finance',
-    contactPerson: 'John Smith',
-    email: 'john@beta.com',
-    phone: '555-0456',
-    billingInfo: 'Net 15, Invoice #5678',
-    documents: [],
-    interactions: [
-      { id: 1, type: 'Message', date: '2025-07-08', notes: 'Follow-up on payment' }
-    ],
-    relationships: ['Referral from Alice Johnson']
-  }
-];
+import { db } from '../firebase';
+import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
 
 const Clients = () => {
-  const [clients, setClients] = useState(initialClients);
+  const [clients, setClients] = useState([]);
   const [formVisible, setFormVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [newClient, setNewClient] = useState({
@@ -55,6 +25,20 @@ const Clients = () => {
   const [showInteractionModal, setShowInteractionModal] = useState(false);
   const [showRelationshipModal, setShowRelationshipModal] = useState(false);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'clients'), (snapshot) => {
+      const clientsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        interactions: doc.data().interactions || [],
+        documents: doc.data().documents || [],
+        relationships: doc.data().relationships || [],
+      }));
+      setClients(clientsData);
+    }, (error) => console.error("Error fetching clients:", error));
+    return () => unsubscribe();
+  }, []);
 
   const validateForm = () => {
     const newErrors = {};
@@ -83,113 +67,133 @@ const Clients = () => {
     setNewRelationship(e.target.value);
   };
 
-  const handleAddOrUpdateClient = () => {
+  const handleAddOrUpdateClient = async () => {
     if (!validateForm()) return;
-    if (editingId !== null) {
-      setClients(clients.map((client) => client.id === editingId ? { ...newClient, id: editingId, documents: client.documents, interactions: client.interactions, relationships: client.relationships } : client));
-    } else {
-      setClients([...clients, { ...newClient, id: clients.length + 1, documents: [], interactions: [], relationships: [] }]);
+    try {
+      if (editingId !== null) {
+        const clientRef = doc(db, 'clients', editingId);
+        await updateDoc(clientRef, newClient);
+      } else {
+        await addDoc(collection(db, 'clients'), { ...newClient, interactions: [], documents: [], relationships: [] });
+      }
+      setFormVisible(false);
+      setEditingId(null);
+      setNewClient({ name: '', industry: '', contactPerson: '', email: '', phone: '', billingInfo: '' });
+      setErrors({});
+    } catch (error) {
+      console.error("Error adding/updating client:", error);
     }
-    setFormVisible(false);
-    setEditingId(null);
-    setNewClient({ name: '', industry: '', contactPerson: '', email: '', phone: '', billingInfo: '' });
-    setErrors({});
   };
 
-  const handleAddInteraction = (clientId) => {
+  const handleAddInteraction = async (clientId) => {
     if (!newInteraction.date || !newInteraction.notes) return;
-    setClients(clients.map((client) => 
-      client.id === clientId 
-        ? { ...client, interactions: [...client.interactions, { ...newInteraction, id: client.interactions.length + 1 }] }
-        : client
-    ));
-    setNewInteraction({ type: 'Call', date: '', notes: '' });
+    try {
+      const clientRef = doc(db, 'clients', clientId);
+      const interactions = clients.find((c) => c.id === clientId).interactions || [];
+      await updateDoc(clientRef, {
+        interactions: [...interactions, { ...newInteraction, id: Date.now() }],
+      });
+      setNewInteraction({ type: 'Call', date: '', notes: '' });
+    } catch (error) {
+      console.error("Error adding interaction:", error);
+    }
   };
 
   const handleEditInteraction = (clientId, interaction) => {
     setEditingInteraction({ ...interaction, clientId });
+    setNewInteraction(interaction);
     setShowInteractionModal(true);
   };
 
-  const handleUpdateInteraction = () => {
+  const handleUpdateInteraction = async () => {
     if (!newInteraction.date || !newInteraction.notes) return;
-    setClients(clients.map((client) => 
-      client.id === editingInteraction.clientId 
-        ? {
-            ...client,
-            interactions: client.interactions.map((int) =>
-              int.id === editingInteraction.id ? { ...newInteraction, id: int.id } : int
-            )
-          }
-        : client
-    ));
-    setShowInteractionModal(false);
-    setEditingInteraction(null);
-    setNewInteraction({ type: 'Call', date: '', notes: '' });
+    try {
+      const clientRef = doc(db, 'clients', editingInteraction.clientId);
+      const interactions = clients.find((c) => c.id === editingInteraction.clientId).interactions;
+      await updateDoc(clientRef, {
+        interactions: interactions.map((int) =>
+          int.id === editingInteraction.id ? { ...newInteraction, id: int.id } : int
+        ),
+      });
+      setShowInteractionModal(false);
+      setEditingInteraction(null);
+      setNewInteraction({ type: 'Call', date: '', notes: '' });
+    } catch (error) {
+      console.error("Error updating interaction:", error);
+    }
   };
 
-  const handleDeleteInteraction = (clientId, interactionId) => {
+  const handleDeleteInteraction = async (clientId, interactionId) => {
     if (window.confirm('Are you sure you want to delete this interaction?')) {
-      setClients(clients.map((client) => 
-        client.id === clientId 
-          ? { ...client, interactions: client.interactions.filter((int) => int.id !== interactionId) }
-          : client
-      ));
+      try {
+        const clientRef = doc(db, 'clients', clientId);
+        const interactions = clients.find((c) => c.id === clientId).interactions.filter((int) => int.id !== interactionId);
+        await updateDoc(clientRef, { interactions });
+      } catch (error) {
+        console.error("Error deleting interaction:", error);
+      }
     }
   };
 
-  const handleAddDocument = (clientId) => {
+  const handleAddDocument = async (clientId) => {
     if (newDocument) {
-      setClients(clients.map((client) => 
-        client.id === clientId 
-          ? { ...client, documents: [...client.documents, newDocument.name] }
-          : client
-      ));
-      setNewDocument(null);
-      fileInputRef.current.value = null;
+      try {
+        const clientRef = doc(db, 'clients', clientId);
+        const documents = clients.find((c) => c.id === clientId).documents || [];
+        await updateDoc(clientRef, {
+          documents: [...documents, newDocument.name],
+        });
+        setNewDocument(null);
+        fileInputRef.current.value = null;
+      } catch (error) {
+        console.error("Error adding document:", error);
+      }
     }
   };
 
-  const handleEditDocument = (clientId, oldDoc, newDoc) => {
+  const handleEditDocument = async (clientId, oldDoc, newDoc) => {
     if (newDoc) {
-      setClients(clients.map((client) => 
-        client.id === clientId 
-          ? { ...client, documents: client.documents.map((doc) => doc === oldDoc ? newDoc.name : doc) }
-          : client
-      ));
-      setNewDocument(null);
-      fileInputRef.current.value = null;
+      try {
+        const clientRef = doc(db, 'clients', clientId);
+        const documents = clients.find((c) => c.id === clientId).documents.map((doc) => doc === oldDoc ? newDoc.name : doc);
+        await updateDoc(clientRef, { documents });
+        setNewDocument(null);
+        fileInputRef.current.value = null;
+      } catch (error) {
+        console.error("Error editing document:", error);
+      }
     }
   };
 
-  const handleDeleteDocument = (clientId, doc) => {
+  const handleDeleteDocument = async (clientId, docName) => {
     if (window.confirm('Are you sure you want to delete this document?')) {
-      setClients(clients.map((client) => 
-        client.id === clientId 
-          ? { ...client, documents: client.documents.filter((d) => d !== doc) }
-          : client
-      ));
+      try {
+        const clientRef = doc(db, 'clients', clientId);
+        const documents = clients.find((c) => c.id === clientId).documents.filter((d) => d !== docName);
+        await updateDoc(clientRef, { documents });
+      } catch (error) {
+        console.error("Error deleting document:", error);
+      }
     }
   };
 
-  const handleAddOrUpdateRelationship = (clientId) => {
+  const handleAddOrUpdateRelationship = async (clientId) => {
     if (!newRelationship) return;
-    if (editingRelationship !== null) {
-      setClients(clients.map((client) => 
-        client.id === clientId 
-          ? { ...client, relationships: client.relationships.map((rel, index) => index === editingRelationship ? newRelationship : rel) }
-          : client
-      ));
-    } else {
-      setClients(clients.map((client) => 
-        client.id === clientId 
-          ? { ...client, relationships: [...client.relationships, newRelationship] }
-          : client
-      ));
+    try {
+      const clientRef = doc(db, 'clients', clientId);
+      const relationships = clients.find((c) => c.id === clientId).relationships || [];
+      if (editingRelationship !== null) {
+        relationships[editingRelationship] = newRelationship;
+      } else {
+        relationships.push(newRelationship);
+      }
+      await updateDoc(clientRef, { relationships });
+      setShowRelationshipModal(false);
+      setEditingRelationship(null);
+      setNewRelationship('');
+    } catch (error) {
+      console.error("Error adding/updating relationship:", error);
     }
-    setShowRelationshipModal(false);
-    setEditingRelationship(null);
-    setNewRelationship('');
   };
 
   const handleEditRelationship = (clientId, index, rel) => {
@@ -198,19 +202,25 @@ const Clients = () => {
     setShowRelationshipModal(true);
   };
 
-  const handleDeleteRelationship = (clientId, index) => {
+  const handleDeleteRelationship = async (clientId, index) => {
     if (window.confirm('Are you sure you want to delete this relationship?')) {
-      setClients(clients.map((client) => 
-        client.id === clientId 
-          ? { ...client, relationships: client.relationships.filter((_, i) => i !== index) }
-          : client
-      ));
+      try {
+        const clientRef = doc(db, 'clients', clientId);
+        const relationships = clients.find((c) => c.id === clientId).relationships.filter((_, i) => i !== index);
+        await updateDoc(clientRef, { relationships });
+      } catch (error) {
+        console.error("Error deleting relationship:", error);
+      }
     }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this client?')) {
-      setClients(clients.filter((client) => client.id !== id));
+      try {
+        await deleteDoc(doc(db, 'clients', id));
+      } catch (error) {
+        console.error("Error deleting client:", error);
+      }
     }
   };
 
@@ -527,7 +537,7 @@ const Clients = () => {
                           name="notes"
                           placeholder="Enter notes"
                           value={newInteraction.notes}
-                          onChange={handleInputChange}
+                          onChange={handleInteractionChange}
                           className="text-sm mb-2"
                         />
                         <Button

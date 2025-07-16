@@ -1,58 +1,74 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import '../styles/Leads.css';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import { Modal, Button, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import CrNavbar from '../components/Navbar';
-
-const initialLeads = [
-  {
-    id: 1,
-    name: 'Alice Johnson',
-    stage: 'New',
-    source: 'LinkedIn',
-    score: 87,
-    nextStep: 'Follow up tomorrow 11 AM',
-    assignedTo: 'John Doe'
-  },
-  {
-    id: 2,
-    name: 'Bob Singh',
-    stage: 'Qualified',
-    source: 'Referral',
-    score: 73,
-    nextStep: 'Schedule demo Friday',
-    assignedTo: 'Sarah Smith'
-  }
-];
+import { db } from '../firebase';
+import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, Timestamp } from 'firebase/firestore';
 
 const Leads = () => {
-  const [leads, setLeads] = useState(initialLeads);
+  const [leads, setLeads] = useState([]);
   const [formVisible, setFormVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [newLead, setNewLead] = useState({
     name: '', stage: 'New', source: 'LinkedIn', score: 50, nextStep: '', assignedTo: ''
   });
 
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'leads'), (snapshot) => {
+      const leadsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setLeads(leadsData);
+    }, (error) => console.error("Error fetching leads:", error));
+    return () => unsubscribe();
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewLead({ ...newLead, [name]: value });
   };
 
-  const handleAddOrUpdateLead = () => {
-    if (editingId !== null) {
-      setLeads(leads.map((lead) => lead.id === editingId ? { ...newLead, id: editingId } : lead));
-    } else {
-      setLeads([...leads, { ...newLead, id: leads.length + 1 }]);
+  const logActivity = async (description) => {
+    try {
+      await addDoc(collection(db, 'activity'), {
+        description,
+        createdAt: Timestamp.fromDate(new Date()),
+      });
+      console.log('Activity logged:', description);
+    } catch (error) {
+      console.error("Error logging activity:", error);
     }
-    setFormVisible(false);
-    setEditingId(null);
-    setNewLead({ name: '', stage: 'New', source: 'LinkedIn', score: 50, nextStep: '', assignedTo: '' });
   };
 
-  const handleDelete = (id) => {
-    setLeads(leads.filter((lead) => lead.id !== id));
+  const handleAddOrUpdateLead = async () => {
+    try {
+      if (editingId !== null) {
+        const leadRef = doc(db, 'leads', editingId);
+        await updateDoc(leadRef, newLead);
+        await logActivity(`Lead updated: ${newLead.name}`);
+      } else {
+        await addDoc(collection(db, 'leads'), newLead);
+        await logActivity(`New lead added: ${newLead.name}`);
+      }
+      setFormVisible(false);
+      setEditingId(null);
+      setNewLead({ name: '', stage: 'New', source: 'LinkedIn', score: 50, nextStep: '', assignedTo: '' });
+    } catch (error) {
+      console.error("Error adding/updating lead:", error);
+    }
+  };
+
+  const handleDelete = async (id, name) => {
+    try {
+      await deleteDoc(doc(db, 'leads', id));
+      await logActivity(`Lead deleted: ${name}`);
+    } catch (error) {
+      console.error("Error deleting lead:", error);
+    }
   };
 
   const handleEdit = (lead) => {
@@ -79,7 +95,7 @@ const Leads = () => {
       <div className="sidebar-fixed">
         <Sidebar />
       </div>
-      <CrNavbar/>
+      <CrNavbar />
       <div className="leads-content mt-5">
         <div className="leads-header">
           <div>
@@ -101,7 +117,7 @@ const Leads = () => {
                 <Form.Label>Lead Name</Form.Label>
                 <Form.Control
                   type="text"
-                  name="name"
+                  name2="name"
                   placeholder="Lead Name"
                   value={newLead.name}
                   onChange={handleInputChange}
@@ -186,7 +202,7 @@ const Leads = () => {
                 <span className="next-step">{lead.nextStep}</span>
                 <div className="action-icons">
                   <FaEdit title="Edit" onClick={() => handleEdit(lead)} />
-                  <FaTrash onClick={() => handleDelete(lead.id)} title="Delete" />
+                  <FaTrash onClick={() => handleDelete(lead.id, lead.name)} title="Delete" />
                 </div>
               </div>
             </div>

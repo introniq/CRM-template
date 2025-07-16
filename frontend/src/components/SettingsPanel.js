@@ -9,6 +9,9 @@ import {
   FaSignOutAlt
 } from 'react-icons/fa';
 import { useState } from 'react';
+import { auth } from '../firebase';
+import { signOut } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
 const SettingsPanel = ({ onClose }) => {
   const [modalType, setModalType] = useState(null);
@@ -21,6 +24,7 @@ const SettingsPanel = ({ onClose }) => {
   });
   const [passwordErrors, setPasswordErrors] = useState([]);
   const [emailErrors, setEmailErrors] = useState([]);
+  const navigate = useNavigate();
 
   const closeModal = () => {
     setModalType(null);
@@ -83,6 +87,17 @@ const SettingsPanel = ({ onClose }) => {
     closeModal();
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      onClose();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout Error:', error);
+      alert('Failed to log out: ' + error.message);
+    }
+  };
+
   return (
     <div className="glass-panel">
       <div className="glass-header">
@@ -114,7 +129,7 @@ const SettingsPanel = ({ onClose }) => {
           <div className="glass-item danger" onClick={() => setModalType('delete')}>
             <FaTrashAlt className="glass-icon" /><span>Delete Account</span>
           </div>
-          <div className="glass-item logout" onClick={onClose}>
+          <div className="glass-item logout" onClick={handleLogout}>
             <FaSignOutAlt className="glass-icon" /><span>Logout</span>
           </div>
         </div>
@@ -135,7 +150,7 @@ const SettingsPanel = ({ onClose }) => {
             </div>
             <div className="modal-body">
               {modalType === 'name' && (
-                <form onSubmit={handleSubmit}>
+                <div>
                   <label htmlFor="name">Full Name</label>
                   <input
                     id="name"
@@ -148,12 +163,12 @@ const SettingsPanel = ({ onClose }) => {
                   />
                   <div className="modal-actions">
                     <button type="button" className="modal-cancel" onClick={closeModal}>Cancel</button>
-                    <button type="submit" className="modal-save">Save</button>
+                    <button type="button" className="modal-save" onClick={handleSubmit}>Save</button>
                   </div>
-                </form>
+                </div>
               )}
               {modalType === 'email' && (
-                <form onSubmit={handleSubmit}>
+                <div>
                   <label htmlFor="email">Email</label>
                   <input
                     id="email"
@@ -174,17 +189,18 @@ const SettingsPanel = ({ onClose }) => {
                   <div className="modal-actions">
                     <button type="button" className="modal-cancel" onClick={closeModal}>Cancel</button>
                     <button
-                      type="submit"
+                      type="button"
                       className="modal-save"
+                      onClick={handleSubmit}
                       disabled={emailErrors.length > 0}
                     >
                       Save
                     </button>
                   </div>
-                </form>
+                </div>
               )}
               {modalType === 'password' && (
-                <form onSubmit={handleSubmit}>
+                <div>
                   <label htmlFor="currentPassword">Current Password</label>
                   <input
                     id="currentPassword"
@@ -225,14 +241,15 @@ const SettingsPanel = ({ onClose }) => {
                   <div className="modal-actions">
                     <button type="button" className="modal-cancel" onClick={closeModal}>Cancel</button>
                     <button
-                      type="submit"
+                      type="button"
                       className="modal-save"
+                      onClick={handleSubmit}
                       disabled={passwordErrors.length > 0 || formData.newPassword !== formData.confirmPassword}
                     >
                       Update Password
                     </button>
                   </div>
-                </form>
+                </div>
               )}
               {modalType === 'delete' && (
                 <div className="delete-confirmation">

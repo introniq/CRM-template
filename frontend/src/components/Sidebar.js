@@ -10,7 +10,7 @@ import {
 } from 'react-icons/fa';
 
 const menuItems = [
-  { name: 'Dashboard', path: '/', icon: <FaTachometerAlt /> },
+  { name: 'Dashboard', path: '/dashboard', icon: <FaTachometerAlt /> },
   { name: 'Leads', path: '/leads', icon: <FaUsers /> },
   { name: 'Clients / Contacts', path: '/clients', icon: <FaUserFriends /> },
   { name: 'Deals', path: '/deals', icon: <FaHandshake /> },
@@ -21,6 +21,16 @@ const menuItems = [
 ];
 
 const Sidebar = () => {
+  const getLinkStyle = (isActive) => ({
+    ...styles.link,
+    ...(isActive ? styles.activeLink : styles.inactiveLink),
+  });
+
+  const getIconStyle = (isActive) => ({
+    ...styles.icon,
+    color: isActive ? '#0ea5e9' : '#555',
+  });
+
   return (
     <div style={styles.sidebar}>
       <h4 style={styles.title}>IntroNiQ Dashboard</h4>
@@ -30,26 +40,20 @@ const Sidebar = () => {
           <NavLink
             key={index}
             to={item.path}
-            style={({ isActive }) =>
-              isActive
-                ? { ...styles.link, ...styles.activeLink }
-                : { ...styles.link, ...styles.inactiveLink }
-            }
+            style={({ isActive }) => getLinkStyle(isActive)}
           >
-            <span
-              style={{
-                ...styles.icon,
-                color: window.location.pathname === item.path ? '#0ea5e9' : '#555',
-              }}
-            >
-              {item.icon}
-            </span>
-            <span>{item.name}</span>
+            {({ isActive }) => (
+              <>
+                <span style={getIconStyle(isActive)}>
+                  {item.icon}
+                </span>
+                <span>{item.name}</span>
+              </>
+            )}
           </NavLink>
         ))}
       </div>
     </div>
-
   );
 };
 
@@ -64,10 +68,10 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     fontFamily: `'Segoe UI', sans-serif`,
-    overflowY: 'hidden',         
+    overflowY: 'hidden',
     overflowX: 'hidden',
     boxSizing: 'border-box',
-    borderRight: '1px solid #dee2e6'
+    borderRight: '1px solid #dee2e6',
   },
   title: {
     textAlign: 'center',
@@ -85,12 +89,12 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    padding: '10px 35px', // increased left padding for slight right shift
+    padding: '10px 35px',
     textDecoration: 'none',
     transition: 'all 0.2s ease-in-out',
     borderRadius: '8px',
-    whiteSpace: 'nowrap',         // prevents long text from wrapping
-    overflow: 'hidden',           // hides overflowed text/icons
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   activeLink: {
@@ -108,5 +112,9 @@ const styles = {
     fontSize: '1rem',
     display: 'flex',
     alignItems: 'center',
+  },
+  divider: {
+    border: '0.5px solid #dee2e6',
+    margin: '10px 0',
   },
 };
